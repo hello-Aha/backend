@@ -14,6 +14,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       if (req && req.cookies) {
         token = req.cookies['jwt'];
       }
+      console.log(req.cookies);
       return token || ExtractJwt.fromAuthHeaderAsBearerToken()(req);
     };
     super({
@@ -31,7 +32,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     return token;
   }
 
-  async validate(payload: JwtPayload) {
+  async validate(payload: JwtPayload) : Promise<any> {
     return {userId: payload.sub, username: payload.username};
   }
 }
