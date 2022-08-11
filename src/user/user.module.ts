@@ -1,12 +1,13 @@
 /* eslint-disable require-jsdoc */
 /* eslint-disable new-cap */
 import {Module} from '@nestjs/common';
+import {EncryptService} from 'src/utilities/encrypt.service';
 import {UserController} from './user.controller';
-import {UsersService} from './user.service';
+import {UserService} from './user.service';
 
 @Module({
-  providers: [UsersService],
+  providers: [UserService, EncryptService],
   controllers: [UserController],
-  exports: [UsersService],
+  exports: [UserService],
 })
 export class UsersModule {}
