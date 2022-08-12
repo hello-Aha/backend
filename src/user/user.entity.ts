@@ -7,14 +7,17 @@ export class User {
   @PrimaryGeneratedColumn()
     id: number;
 
-  @Column()
+  @Column({nullable: true})
     facebookUserId: string;
 
-  @Column()
+  @Column({nullable: true})
     googleUserId: string;
 
-  @Column()
+  @Column({unique: true})
     email: string;
+
+  @Column({unique: true})
+    account: string;
 
   @Column()
     encryptedPassword: string;
@@ -28,18 +31,24 @@ export class User {
   @Column()
     displayName: string;
 
-  @Column({type: 'inet'})
+  @Column({type: 'inet', nullable: true})
     currentSignInIp: string;
 
-  @Column({type: 'inet'})
+  @Column({type: 'inet', nullable: true})
     lastSignInIp: string;
 
-  @Column()
+  @Column({nullable: true})
     signInCount: number;
 
-  @Column({type: 'timestamptz'})
+  @Column({default: false})
+    isActive: boolean;
+
+  @Column({type: 'timestamptz', default: new Date()})
+    currentSignInAt: Date;
+
+  @Column({type: 'timestamptz', default: new Date()})
     createdAt: Date;
 
-  @Column({type: 'timestamptz'})
+  @Column({type: 'timestamptz', default: new Date()})
     updatedAt: Date;
 }

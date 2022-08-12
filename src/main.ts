@@ -14,7 +14,7 @@ async function bootstrap() {
       .addTag('Aha')
       .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('swagger', app, document);
 
   app.use(cookieParser());
   await app.listen(3000);

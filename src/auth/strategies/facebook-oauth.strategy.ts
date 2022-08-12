@@ -21,17 +21,20 @@ export class FacebookOauthStrategy extends PassportStrategy(
   }
 
   async validate(
-      accessToken: string,
-      refreshToken: string,
+      _accessToken: string,
+      _refreshToken: string,
       profile: Profile,
       done: (err: any, user: any, info?: any) => void,
   ): Promise<any> {
-    const {name, emails} = profile;
+    const {name, emails, id} = profile;
+    console.log(profile);
     const user = {
+      id: id,
       email: emails[0].value,
       firstName: name.givenName,
       lastName: name.familyName,
-      accessToken,
+      // picture: photos[0].value,
+      displayName: `${name.givenName} ${name.familyName}`,
     };
     done(null, user);
   }

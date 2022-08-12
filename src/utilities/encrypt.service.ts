@@ -9,7 +9,9 @@ export class EncryptService {
   constructor() {}
 
   async ecryptedByBcrypt(password: string): Promise<string> {
-    const hash = await bcrypt.hash(password, this.saltRounds);
-    return hash;
+    return await bcrypt.hash(password, this.saltRounds);
+  }
+  async comparedByBcrypt(password: string, hash: string): Promise<boolean> {
+    return await bcrypt.compare(password, hash);
   }
 }
