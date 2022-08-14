@@ -27,12 +27,17 @@ export class AuthController {
 
   @Post('login')
   @UseGuards(LocalAuthGuard)
-  async login(@Req() req) {
+  async login(@Req() req, @Res({passthrough: true}) res) {
     const accessToken = this.authService.login(req.user);
+    await this.userService.updateSignInSatatus(req.user, req.ip.toString());
+    res.cookie('accessToken', accessToken);
     return {
       statusCode: HttpStatus.OK,
-      accessToken,
       redirectURL: this.configService.get<string>('HOMEPAGEURL'),
+      data: {
+        accessToken,
+        ...req.user,
+      },
     };
   }
 
@@ -50,7 +55,6 @@ export class AuthController {
   ) {
     const user: any = req.user;
     const existUser = await this.userService.findOne(user.email);
-    console.log(!existUser);
     if (!existUser) {
       return {
         statusCode: HttpStatus.OK,
@@ -83,7 +87,6 @@ export class AuthController {
   async facebookLoginRedirect(@Req() req: Request): Promise<any> {
     const user: any = req.user;
     const existUser = await this.userService.findOne(user.email);
-    console.log(!existUser);
     if (!existUser) {
       return {
         statusCode: HttpStatus.OK,

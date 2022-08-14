@@ -12,8 +12,7 @@ export class UserService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
     private encryptService: EncryptService,
-  ) {
-  }
+  ) {}
 
   /**
    * Find user.
@@ -28,15 +27,7 @@ export class UserService {
           account: uniqueTag,
         })
         .getOne();
-    // console.log(user);
     return user;
-    // return await this.userRepository
-    //     .createQueryBuilder()
-    //     .where('email = :email OR account = :account', {
-    //       email: uniqueTag,
-    //       account: uniqueTag,
-    //     })
-    //     .getOne();
   }
 
   async createOne(user: any): Promise<User | undefined> {
@@ -56,12 +47,69 @@ export class UserService {
     await this.userRepository.save(newUser);
     return;
   }
-  async resetPassword(
-      newPassword: string,
-      oldPassword: string,
-  ): Promise<Boolean> {
-    // const encryptedPassword =
-    await this.encryptService.ecryptedByBcrypt(newPassword);
-    return false;
+  async resetPassword(user: User, newPassword: string): Promise<Boolean> {
+    const encryptedPassword = await this.encryptService.ecryptedByBcrypt(
+        newPassword,
+    );
+    const updatedUser = this.userRepository.create({
+      ...user,
+      encryptedPassword,
+      updatedAt: new Date(),
+    });
+    await this.userRepository.save(updatedUser);
+    return true;
+  }
+
+  async updateSignInSatatus(user: User, signInIp: string) {
+    let payload = {
+      ...user,
+      currentSignInIp: signInIp,
+      lastSignInIp: signInIp,
+      signInCount: user.signInCount + 1,
+      currentSignInAt: new Date(),
+    };
+    if (signInIp !== user.currentSignInIp) {
+      payload = {
+        ...payload,
+        lastSignInIp: user.currentSignInIp,
+      };
+    }
+    try {
+      const updatedUser = this.userRepository.create(payload);
+      await this.userRepository.save(updatedUser);
+      return true;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async updateLastSessionAt(userId: string) {
+    try {
+      await this.userRepository.update(userId, {
+        lastSessionAt: new Date(),
+      });
+      return true;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async update(userId: string, data: any) {
+    const payload = {
+      ...data,
+      updatedAt: new Date(),
+    };
+    try {
+      await this.userRepository.update(userId, payload);
+      return true;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async findAll() {
+    return await this.userRepository.find({
+      take: 10,
+    });
   }
 }

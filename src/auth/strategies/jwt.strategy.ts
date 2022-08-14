@@ -4,15 +4,16 @@ import {ExtractJwt, Strategy} from 'passport-jwt';
 import {PassportStrategy} from '@nestjs/passport';
 import {Injectable} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
+import {UserService} from 'src/user/user.service';
 
-export type JwtPayload = { sub: number; username: string };
+export type JwtPayload = { sub: string; email: string };
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(configService: ConfigService) {
+  constructor(configService: ConfigService, private userService: UserService) {
     const extractJwtFromCookie = (req) => {
       let token = null;
       if (req && req.cookies) {
-        token = req.cookies['jwt'];
+        token = req.cookies['accessToken'];
       }
       console.log(req.cookies);
       return token || ExtractJwt.fromAuthHeaderAsBearerToken()(req);
@@ -27,12 +28,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   extractJwtFromCookie(req) {
     let token = null;
     if (req && req.cookies) {
-      token = req.cookies['jwt'];
+      token = req.cookies['accessToken'];
     }
     return token;
   }
 
-  async validate(payload: JwtPayload) : Promise<any> {
-    return {userId: payload.sub, username: payload.username};
+  async validate(payload: JwtPayload): Promise<any> {
+    const user = {userId: payload.sub, email: payload.email};
+    await this.userService.updateLastSessionAt(user.userId);
+    return user;
   }
 }

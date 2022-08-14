@@ -9,7 +9,7 @@ import {EncryptService} from 'src/utilities/encrypt.service';
 import {AuthController} from './auth.controller';
 import {AuthService} from './auth.service';
 import {FacebookOauthStrategy} from './strategies/facebook-oauth.strategy';
-import {GoogleOauthStrategy} from './strategies/google-oauth.stragegy';
+import {GoogleOauthStrategy} from './strategies/google-oauth.stragtegy';
 import {JwtStrategy} from './strategies/jwt.strategy';
 import {LocalStrategy} from './strategies/local.strategy';
 

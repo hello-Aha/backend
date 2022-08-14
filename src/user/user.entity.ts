@@ -37,8 +37,11 @@ export class User {
   @Column({type: 'inet', nullable: true})
     lastSignInIp: string;
 
-  @Column({nullable: true})
+  @Column({default: 0})
     signInCount: number;
+
+  @Column({type: 'timestamptz', default: new Date()})
+    lastSessionAt: Date;
 
   @Column({default: false})
     isActive: boolean;

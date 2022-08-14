@@ -30,7 +30,7 @@ export class AuthService {
     return this.jwtService.sign(payload);
   }
   googleSignIn(user: any) {
-    const payload = {username: user.displayName, sub: user.id};
+    const payload = {email: user.email, sub: user.id};
     return this.jwtService.sign(payload);
   }
 
