@@ -1,5 +1,3 @@
-/* eslint-disable require-jsdoc */
-/* eslint-disable new-cap */
 import {Module} from '@nestjs/common';
 import {TypeOrmModule} from '@nestjs/typeorm';
 import {EncryptService} from 'src/utilities/encrypt.service';

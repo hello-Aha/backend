@@ -1,7 +1,6 @@
-/* eslint-disable require-jsdoc */
-/* eslint-disable new-cap */
 import {Injectable} from '@nestjs/common';
 import {JwtService} from '@nestjs/jwt';
+import {User} from 'src/user/user.entity';
 import {UserService} from 'src/user/user.service';
 import {EncryptService} from 'src/utilities/encrypt.service';
 
@@ -13,7 +12,7 @@ export class AuthService {
     private encryptService: EncryptService,
   ) {}
 
-  async validateUser(account: string, password: string): Promise<any> {
+  async validateUser(account: string, password: string): Promise<User> {
     const user = await this.userService.findOne(account);
     if (!user) return null;
     const comparedResult = await this.encryptService.comparedByBcrypt(
@@ -21,22 +20,28 @@ export class AuthService {
         user.encryptedPassword,
     );
     if (!comparedResult) return null;
-    const {...result} = user;
-    return result;
+    return user;
   }
 
-  login(user: any) {
+  async login(user: User, ip: string) {
+    await this.userService.updateSignInSatatus(user, ip);
     const payload = {email: user.email, sub: user.id};
     return this.jwtService.sign(payload);
   }
-
-  googleSignIn(user: any) {
-    const payload = {email: user.email, sub: user.id};
-    return this.jwtService.sign(payload);
-  }
-
-  facebookSignIn(user: any) {
-    const payload = {email: user.email, sub: user.id};
-    return this.jwtService.sign(payload);
+  async oauthSignIn(
+      user: User,
+      ip: string,
+      loginWay: string,
+      thirdPartyId: string,
+  ) {
+    const jwtToken = await this.login(user, ip);
+    if (user.isActive === false) await this.userService.activateUser(user.id);
+    if (user.googleUserId === null && loginWay === 'google') {
+      await this.userService.addThirdPartyId(user.id, thirdPartyId, loginWay);
+    }
+    if (user.facebookUserId === null && loginWay === 'facebook') {
+      await this.userService.addThirdPartyId(user.id, thirdPartyId, loginWay);
+    }
+    return jwtToken;
   }
 }

@@ -1,12 +1,9 @@
-/* eslint-disable new-cap */
-/* eslint-disable require-jsdoc */
 import {
   Controller,
   Get,
   UseGuards,
   Post,
   Req,
-  Ip,
   HttpStatus,
   HttpException,
   Patch,
@@ -24,7 +21,7 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post('')
-  async signUp(@Req() req, @Body() body: CreateUserDto, @Ip() ip) {
+  async signUp(@Req() req, @Body() body: CreateUserDto) {
     await this.userService.createOne(body);
     return req.body;
   }
@@ -64,7 +61,7 @@ export class UserController {
         data: body,
       };
     } catch (error) {
-      return error;
+      throw error;
     }
   }
 
@@ -97,7 +94,7 @@ export class UserController {
         },
       };
     } catch (error) {
-      console.log(error);
+      throw error;
     }
   }
 }

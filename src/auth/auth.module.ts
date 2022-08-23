@@ -1,5 +1,3 @@
-/* eslint-disable require-jsdoc */
-/* eslint-disable new-cap */
 import {Module} from '@nestjs/common';
 import {ConfigModule, ConfigService} from '@nestjs/config';
 import {JwtModule} from '@nestjs/jwt';
@@ -9,7 +7,7 @@ import {EncryptService} from 'src/utilities/encrypt.service';
 import {AuthController} from './auth.controller';
 import {AuthService} from './auth.service';
 import {FacebookOauthStrategy} from './strategies/facebook-oauth.strategy';
-import {GoogleOauthStrategy} from './strategies/google-oauth.stragtegy';
+import {GoogleOauthStrategy} from './strategies/google-oauth.strategy';
 import {JwtStrategy} from './strategies/jwt.strategy';
 import {LocalStrategy} from './strategies/local.strategy';
 

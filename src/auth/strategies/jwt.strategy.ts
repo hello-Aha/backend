@@ -1,12 +1,12 @@
-/* eslint-disable require-jsdoc */
-/* eslint-disable new-cap */
+
+
 import {ExtractJwt, Strategy} from 'passport-jwt';
 import {PassportStrategy} from '@nestjs/passport';
 import {Injectable} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
 import {UserService} from 'src/user/user.service';
 
-export type JwtPayload = { sub: string; email: string };
+export type JwtPayload = { sub: number; email: string };
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(configService: ConfigService, private userService: UserService) {

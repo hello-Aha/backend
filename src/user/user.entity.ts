@@ -1,5 +1,3 @@
-/* eslint-disable new-cap */
-/* eslint-disable require-jsdoc */
 import {Column, Entity, PrimaryGeneratedColumn} from 'typeorm';
 
 @Entity()

@@ -1,40 +1,49 @@
-/* eslint-disable new-cap */
-/* eslint-disable require-jsdoc */
+
+
 import {Injectable} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
 import {PassportStrategy} from '@nestjs/passport';
-import {Profile, Strategy} from 'passport-facebook';
+// import {Profile, Strategy} from 'passport-facebook';
+import {Strategy} from 'passport-custom';
+import {Request} from 'express';
+import {FacebookUserInfo} from '../dtos/FacebookUserInfo';
 
 @Injectable()
 export class FacebookOauthStrategy extends PassportStrategy(
     Strategy,
     'facebook',
 ) {
+  facebookGraphApi: string;
   constructor(configService: ConfigService) {
-    super({
-      clientID: configService.get<string>('OAUTH_FACEBOOK_APP_ID'),
-      clientSecret: configService.get<string>('OAUTH_FACEBOOK_SECRET'),
-      callbackURL: configService.get<string>('OAUTH_FACEBOOK_REDIRECT_URL'),
-      scope: 'email',
-      profileFields: ['email', 'name'],
-    });
+    super();
+    this.facebookGraphApi = configService.get<string>('FACEBOOK_GRAPH_API');
   }
 
-  async validate(
-      _accessToken: string,
-      _refreshToken: string,
-      profile: Profile,
-      done: (err: any, user: any, info?: any) => void,
-  ): Promise<any> {
-    const {name, emails, id} = profile;
+  async validate(req: Request): Promise<FacebookUserInfo> {
+    const {accessToken} = req.body;
+    const userInfo = await this.getFacebookUserInfo(accessToken);
+    const {id, name, email} = userInfo;
     const user = {
-      id: id,
-      email: emails[0].value,
-      firstName: name.givenName,
-      lastName: name.familyName,
-      // picture: photos[0].value,
-      displayName: `${name.givenName} ${name.familyName}`,
+      facebookUserId: id,
+      displayName: name,
+      email,
     };
-    done(null, user);
+    return user;
+  }
+
+  async getFacebookUserInfo(accessToken: string) {
+    const url = new URL(this.facebookGraphApi);
+    url.search = new URLSearchParams({
+      access_token: accessToken,
+      fields: 'id,name,email',
+    }).toString();
+    const httpOptions: RequestInit = {
+      credentials: 'include',
+      mode: 'cors',
+      method: 'GET',
+    };
+    const response = fetch(url, httpOptions);
+    const result = (await response).json();
+    return result;
   }
 }

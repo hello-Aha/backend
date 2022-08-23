@@ -1,5 +1,3 @@
-/* eslint-disable require-jsdoc */
-/* eslint-disable new-cap */
 import {Module} from '@nestjs/common';
 import {ConfigModule, ConfigService} from '@nestjs/config';
 import {TypeOrmModule} from '@nestjs/typeorm';
@@ -22,7 +20,7 @@ import {UsersModule} from './user/user.module';
         password: configService.get<string>('POSTGRES_PASSWORD'),
         database: configService.get<string>('POSTGRES_DATABASE'),
         entities: [User],
-        // logging: true,
+        logging: true,
         synchronize: true,
       }),
       inject: [ConfigService],

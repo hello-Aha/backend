@@ -1,5 +1,3 @@
-/* eslint-disable new-cap */
-/* eslint-disable require-jsdoc */
 import {Controller, Get} from '@nestjs/common';
 import {AppService} from './app.service';
 import {AuthService} from './auth/auth.service';

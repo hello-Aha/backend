@@ -1,5 +1,3 @@
-/* eslint-disable require-jsdoc */
-/* eslint-disable new-cap */
 import {Injectable} from '@nestjs/common';
 
 @Injectable()

@@ -1,10 +1,9 @@
-/* eslint-disable require-jsdoc */
-/* eslint-disable new-cap */
 import {Injectable} from '@nestjs/common';
 import {InjectRepository} from '@nestjs/typeorm';
 import * as moment from 'moment';
 import {EncryptService} from 'src/utilities/encrypt.service';
 import {Repository} from 'typeorm';
+import {CreateUserDto} from './dtos/CreateUser.dto';
 import {UpdateUserDto} from './dtos/UpdateUser.dto';
 import {User} from './user.entity';
 
@@ -15,24 +14,21 @@ export class UserService {
     private userRepository: Repository<User>,
     private encryptService: EncryptService,
   ) {
+    // this.activateUser(17);
   }
 
-  /**
-   * Find user.
-   * @param {string} uniqueTag It could be email, account or mobile.
-   * @return {User} The Result of query.
-   */
-  async findOne(uniqueTag: string): Promise<User | undefined> {
-    const user = await this.userRepository
-        .createQueryBuilder()
-        .where('email = :email', {
-          email: uniqueTag,
-        })
-        .getOne();
+  async findOne(email: string): Promise<User | null> {
+    const user = await this.userRepository.findOneBy({email});
     return user;
   }
 
-  async createOne(user: any): Promise<User | undefined> {
+  async findAll(): Promise<User[] | null> {
+    return await this.userRepository.find({
+      take: 10,
+    });
+  }
+
+  async createOne(user: CreateUserDto): Promise<User | undefined> {
     const {email, password, displayName} = user;
     const encryptedPassword = await this.encryptService.ecryptedByBcrypt(
         password,
@@ -46,6 +42,29 @@ export class UserService {
     await this.userRepository.save(newUser);
     return;
   }
+
+  async activateUser(userId: number) {
+    try {
+      await this.userRepository.update(userId, {isActive: true});
+    } catch (error) {
+      throw error;
+    }
+  }
+  async addThirdPartyId(
+      userId: number,
+      thirdPartyId: string,
+      loginWay: string,
+  ) {
+    if (loginWay === 'google') {
+      await this.userRepository.update(userId, {googleUserId: thirdPartyId});
+    }
+    if (loginWay === 'facebook') {
+      await this.userRepository.update(userId, {
+        facebookUserId: thirdPartyId,
+      });
+    }
+  }
+
   async resetPassword(user: User, newPassword: string): Promise<Boolean> {
     const encryptedPassword = await this.encryptService.ecryptedByBcrypt(
         newPassword,
@@ -82,7 +101,7 @@ export class UserService {
     }
   }
 
-  async updateLastSessionAt(userId: string) {
+  async updateLastSessionAt(userId: number) {
     try {
       await this.userRepository.update(userId, {
         lastSessionAt: new Date(),
@@ -93,8 +112,7 @@ export class UserService {
     }
   }
 
-  async update(userId: string, data: UpdateUserDto) {
-    // console.log(data);
+  async update(userId: number, data: UpdateUserDto) {
     const payload = {
       ...data,
       updatedAt: new Date(),
@@ -105,12 +123,6 @@ export class UserService {
     } catch (error) {
       throw error;
     }
-  }
-
-  async findAll() {
-    return await this.userRepository.find({
-      take: 10,
-    });
   }
 
   async getNumOfActiveUserToday() {
@@ -136,8 +148,10 @@ export class UserService {
         })
         .getCount();
     const result = Number(
-        (Math.abs(avgOfActvieUserInSevenDay/7) * 100).toPrecision(15),
+        (Math.abs(avgOfActvieUserInSevenDay / 7) * 100).toPrecision(15),
     );
-    return Math.round(result) / 100 * Math.sign(avgOfActvieUserInSevenDay/7);
+    return (
+      (Math.round(result) / 100) * Math.sign(avgOfActvieUserInSevenDay / 7)
+    );
   }
 }
