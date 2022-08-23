@@ -15,7 +15,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       if (req && req.cookies) {
         token = req.cookies['accessToken'];
       }
-      console.log(req.cookies);
       return token || ExtractJwt.fromAuthHeaderAsBearerToken()(req);
     };
     super({
@@ -23,14 +22,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       ignoreExpiration: false,
       secretOrKey: configService.get<string>('JWT_SECRET'),
     });
-  }
-
-  extractJwtFromCookie(req) {
-    let token = null;
-    if (req && req.cookies) {
-      token = req.cookies['accessToken'];
-    }
-    return token;
   }
 
   async validate(payload: JwtPayload): Promise<any> {

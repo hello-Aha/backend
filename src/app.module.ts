@@ -22,6 +22,7 @@ import {UsersModule} from './user/user.module';
         password: configService.get<string>('POSTGRES_PASSWORD'),
         database: configService.get<string>('POSTGRES_DATABASE'),
         entities: [User],
+        // logging: true,
         synchronize: true,
       }),
       inject: [ConfigService],

@@ -8,6 +8,7 @@ import {
   Get,
   Res,
   HttpStatus,
+  Head,
 } from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
 import {Request, Response} from 'express';
@@ -15,6 +16,7 @@ import {UserService} from 'src/user/user.service';
 import {AuthService} from './auth.service';
 import {FacebookOauthGuard} from './guards/facebook-oauth.guard';
 import {GoogleOauthGuard} from './guards/google-oauth.guard';
+import {JwtAuthGuard} from './guards/jwt-auth.guard';
 import {LocalAuthGuard} from './guards/local-auth.guard';
 
 @Controller('auth')
@@ -24,6 +26,12 @@ export class AuthController {
     private userService: UserService,
     private configService: ConfigService,
   ) {}
+
+  @Head('')
+  @UseGuards(JwtAuthGuard)
+  async authenticate() {
+    return;
+  }
 
   @Post('login')
   @UseGuards(LocalAuthGuard)
@@ -41,15 +49,9 @@ export class AuthController {
     };
   }
 
-  @Get('google')
+  @Post('google')
   @UseGuards(GoogleOauthGuard)
-  async googleAuth(@Req() req) {
-    return HttpStatus.OK;
-  }
-
-  @Get('google/redirect')
-  @UseGuards(GoogleOauthGuard)
-  async googleAuthRedirect(
+  async googleAuth(
     @Req() req: Request,
     @Res({passthrough: true}) res: Response,
   ) {
@@ -57,24 +59,60 @@ export class AuthController {
     const existUser = await this.userService.findOne(user.email);
     if (!existUser) {
       return {
-        statusCode: HttpStatus.OK,
+        statusCode: HttpStatus.CREATED,
         redirectURL: this.configService.get<string>('SGINUPURL'),
         data: {
-          ...user,
+          user,
           accessToken: null,
         },
       };
     }
-    const accessToken = this.authService.googleSignIn(user);
+    const accessToken = this.authService.googleSignIn(existUser);
     res.cookie('jwt', accessToken);
     return {
-      statusCode: HttpStatus.OK,
+      statusCode: HttpStatus.CREATED,
       redirectURL: this.configService.get<string>('HOMEPAGEURL'),
       data: {
         accessToken,
       },
     };
   }
+
+  // @Get('google')
+  // @UseGuards(GoogleOauthGuard)
+  // async googleAuth(@Req() req) {
+  //   console.log('hello');
+  //   return HttpStatus.OK;
+  // }
+
+  // @Get('google/redirect')
+  // @UseGuards(GoogleOauthGuard)
+  // async googleAuthRedirect(
+  //   @Req() req: Request,
+  //   @Res({passthrough: true}) res: Response,
+  // ) {
+  //   const user: any = req.user;
+  //   const existUser = await this.userService.findOne(user.email);
+  //   if (!existUser) {
+  //     return {
+  //       statusCode: HttpStatus.OK,
+  //       redirectURL: this.configService.get<string>('SGINUPURL'),
+  //       data: {
+  //         ...user,
+  //         accessToken: null,
+  //       },
+  //     };
+  //   }
+  //   const accessToken = this.authService.googleSignIn(user);
+  //   res.cookie('jwt', accessToken);
+  //   return {
+  //     statusCode: HttpStatus.OK,
+  //     redirectURL: this.configService.get<string>('HOMEPAGEURL'),
+  //     data: {
+  //       accessToken,
+  //     },
+  //   };
+  // }
 
   @Get('facebook')
   @UseGuards(FacebookOauthGuard)
@@ -104,6 +142,15 @@ export class AuthController {
       data: {
         accessToken,
       },
+    };
+  }
+
+  @Post('google/test')
+  @UseGuards(GoogleOauthGuard)
+  async googleTest(@Req() req) {
+    console.log(req.user);
+    return {
+      message: 'hello',
     };
   }
 }

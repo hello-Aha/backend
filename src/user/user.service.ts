@@ -2,8 +2,10 @@
 /* eslint-disable new-cap */
 import {Injectable} from '@nestjs/common';
 import {InjectRepository} from '@nestjs/typeorm';
+import * as moment from 'moment';
 import {EncryptService} from 'src/utilities/encrypt.service';
 import {Repository} from 'typeorm';
+import {UpdateUserDto} from './dtos/UpdateUser.dto';
 import {User} from './user.entity';
 
 @Injectable()
@@ -12,7 +14,8 @@ export class UserService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
     private encryptService: EncryptService,
-  ) {}
+  ) {
+  }
 
   /**
    * Find user.
@@ -22,26 +25,22 @@ export class UserService {
   async findOne(uniqueTag: string): Promise<User | undefined> {
     const user = await this.userRepository
         .createQueryBuilder()
-        .where('email = :email OR account = :account', {
+        .where('email = :email', {
           email: uniqueTag,
-          account: uniqueTag,
         })
         .getOne();
     return user;
   }
 
   async createOne(user: any): Promise<User | undefined> {
-    const {email, account, password, firstName, lastName, displayName} = user;
+    const {email, password, displayName} = user;
     const encryptedPassword = await this.encryptService.ecryptedByBcrypt(
         password,
     );
 
     const newUser = this.userRepository.create({
       email,
-      account,
       encryptedPassword,
-      firstName,
-      lastName,
       displayName,
     });
     await this.userRepository.save(newUser);
@@ -94,7 +93,8 @@ export class UserService {
     }
   }
 
-  async update(userId: string, data: any) {
+  async update(userId: string, data: UpdateUserDto) {
+    // console.log(data);
     const payload = {
       ...data,
       updatedAt: new Date(),
@@ -111,5 +111,33 @@ export class UserService {
     return await this.userRepository.find({
       take: 10,
     });
+  }
+
+  async getNumOfActiveUserToday() {
+    const today = moment().startOf('day');
+    return await this.userRepository
+        .createQueryBuilder('user')
+        .select('')
+        .where('user.lastSessionAt > :beginningOfToday', {
+          beginningOfToday: today,
+        })
+        .getCount();
+  }
+
+  async getAvgOfActiveUserInLastSevenDay() {
+    const now = moment();
+    const lastSevenDay = moment().subtract(7, 'days');
+    const avgOfActvieUserInSevenDay = await this.userRepository
+        .createQueryBuilder('user')
+        .select('')
+        .where('user.lastSessionAt BETWEEN :lastSevenDay AND :now', {
+          now: now,
+          lastSevenDay: lastSevenDay,
+        })
+        .getCount();
+    const result = Number(
+        (Math.abs(avgOfActvieUserInSevenDay/7) * 100).toPrecision(15),
+    );
+    return Math.round(result) / 100 * Math.sign(avgOfActvieUserInSevenDay/7);
   }
 }

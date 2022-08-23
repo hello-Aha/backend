@@ -11,47 +11,31 @@ import {
   HttpException,
   Patch,
   Body,
-  Param,
 } from '@nestjs/common';
 import {LocalAuthGuard} from 'src/auth/guards/local-auth.guard';
 import {JwtAuthGuard} from '../auth/guards/jwt-auth.guard';
+import {ResetPasswordDto} from './dtos/ResetPassword.dto';
 import {UpdateUserDto} from './dtos/UpdateUser.dto';
 import {UserService} from './user.service';
-// import {CreateUserDto} from './dtos/CreateUser.dto';
+import {CreateUserDto} from './dtos/CreateUser.dto';
 
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Post('new')
-  async signUp(@Req() req, @Ip() ip) {
-    const re = new RegExp('(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*\\W).{8,}$');
-    const isCorrectExpression = re.test(req.body.password);
-    if (!isCorrectExpression) {
-      throw new HttpException(
-          'password must be validated by rules',
-          HttpStatus.BAD_REQUEST,
-      );
-    }
-    await this.userService.createOne(req.body);
+  @Post('')
+  async signUp(@Req() req, @Body() body: CreateUserDto, @Ip() ip) {
+    await this.userService.createOne(body);
     return req.body;
   }
 
   @Patch('resetPassword')
   @UseGuards(LocalAuthGuard)
-  async resetPassword(@Req() req) {
-    const {newPassword, repeatNewPassword} = req.body;
+  async resetPassword(@Req() req, @Body() body: ResetPasswordDto) {
+    const {newPassword, repeatNewPassword} = body;
     if (newPassword !== repeatNewPassword) {
       throw new HttpException(
           're-enter new password is not same as new password',
-          HttpStatus.BAD_REQUEST,
-      );
-    }
-    const re = new RegExp('(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*\\W).{8,}$');
-    const isCorrectExpression = re.test(newPassword);
-    if (!isCorrectExpression) {
-      throw new HttpException(
-          'password must be validated by rules',
           HttpStatus.BAD_REQUEST,
       );
     }
@@ -59,26 +43,61 @@ export class UserController {
     return {
       statusCode: HttpStatus.OK,
       message: 'modify password successfully',
-      // data: req.user,
     };
   }
 
-  @Patch('/:id')
+  @Patch('')
   @UseGuards(JwtAuthGuard)
-  async update(@Body() body: UpdateUserDto, @Param() params) {
-    const {id} = params;
-    console.log(body);
-    return await this.userService.update(id, body);
+  async update(@Req() req, @Body() body: UpdateUserDto) {
+    const {userId} = req.user;
+    try {
+      const result = await this.userService.update(userId, body);
+      if (!result) {
+        throw new HttpException(
+            'user was updated failed',
+            HttpStatus.NOT_ACCEPTABLE,
+        );
+      }
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'user was updated successfully',
+        data: body,
+      };
+    } catch (error) {
+      return error;
+    }
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get('profile')
-  getProfile(@Req() req) {
-    return req.user;
+  @UseGuards(JwtAuthGuard)
+  async getProfile(@Req() req) {
+    const {email} = req.user;
+    return await this.userService.findOne(email);
   }
 
-  @Get('')
-  getAll(@Req() req) {
-    return this.userService.findAll();
+  @Get('dashboard')
+  @UseGuards(JwtAuthGuard)
+  async getAll() {
+    try {
+      const users = await this.userService.findAll();
+      const avgOfActvieUserInSevenDay =
+        await this.userService.getAvgOfActiveUserInLastSevenDay();
+      const numOfActiveUserToday =
+        await this.userService.getNumOfActiveUserToday();
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'query users successfully',
+        data: {
+          items: users,
+          meta: {
+            userCounts: users.length,
+            avgOfActvieUserInSevenDay,
+            numOfActiveUserToday,
+          },
+        },
+      };
+    } catch (error) {
+      console.log(error);
+    }
   }
 }
