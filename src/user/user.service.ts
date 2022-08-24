@@ -18,14 +18,11 @@ export class UserService {
   }
 
   async findOne(email: string): Promise<User | null> {
-    const user = await this.userRepository.findOneBy({email});
-    return user;
+    return await this.userRepository.findOneBy({email});
   }
 
   async findAll(): Promise<User[] | null> {
-    return await this.userRepository.find({
-      take: 10,
-    });
+    return await this.userRepository.find();
   }
 
   async createOne(user: CreateUserDto): Promise<User | undefined> {

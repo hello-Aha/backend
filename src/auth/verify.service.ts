@@ -1,8 +1,38 @@
-import {Injectable} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import * as twilio from 'twilio';
 
 @Injectable()
 export class VerifyService {
-  constructor() {}
+  client: twilio.Twilio;
+  twilioServiceSID: string;
+  constructor(configService: ConfigService) {
+    this.twilioServiceSID = configService.get<string>('TWILIO_SERVICE_SID');
+    this.client = twilio(
+      configService.get<string>('TWILIO_ACCOUNT_SID'),
+      configService.get<string>('TWILIO_AUTH_TOKEN'),
+    );
+  }
 
-  async sendEmail() {}
+  async sendEmail(email: string, displayName: string) {
+    await this.client.verify.v2
+      .services(this.twilioServiceSID)
+      .verifications.create({
+        channelConfiguration: {
+          substitutions: {
+            displayName: displayName,
+            email,
+          },
+        },
+        to: email,
+        channel: 'email',
+      });
+  }
+
+  async verifyByEmail(email: string, code: string): Promise<boolean> {
+    const verificationCheck = await this.client.verify.v2
+      .services(this.twilioServiceSID)
+      .verificationChecks.create({ to: email, code });
+    return verificationCheck.valid;
+  }
 }

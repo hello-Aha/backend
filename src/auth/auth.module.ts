@@ -10,6 +10,7 @@ import {FacebookOauthStrategy} from './strategies/facebook-oauth.strategy';
 import {GoogleOauthStrategy} from './strategies/google-oauth.strategy';
 import {JwtStrategy} from './strategies/jwt.strategy';
 import {LocalStrategy} from './strategies/local.strategy';
+import {VerifyService} from './verify.service';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import {LocalStrategy} from './strategies/local.strategy';
   ],
   controllers: [AuthController],
   providers: [
+    VerifyService,
     ConfigService,
     AuthService,
     EncryptService,

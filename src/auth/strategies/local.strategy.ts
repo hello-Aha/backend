@@ -10,16 +10,16 @@ import {User} from 'src/user/user.entity';
 export class LocalStrategy extends PassportStrategy(Strategy) {
   constructor(private authService: AuthService) {
     super({
-      usernameField: 'account',
+      usernameField: 'email',
     });
   }
 
-  async validate(account: string, password: string): Promise<User> {
-    const user = await this.authService.validateUser(account, password);
+  async validate(email: string, password: string): Promise<User> {
+    const user = await this.authService.validateUser(email, password);
     if (!user) {
       throw new UnauthorizedException({
         statusCode: HttpStatus.UNAUTHORIZED,
-        message: 'Login failed, please check account or paasword is correct',
+        message: 'Login failed, please check email or paasword is correct',
       });
     }
     return user;

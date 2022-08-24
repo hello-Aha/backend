@@ -1,6 +1,6 @@
 
 
-import {Injectable} from '@nestjs/common';
+import {HttpStatus, Injectable, UnauthorizedException} from '@nestjs/common';
 import {ConfigService} from '@nestjs/config';
 import {PassportStrategy} from '@nestjs/passport';
 // import {Profile, Strategy} from 'passport-facebook';
@@ -42,8 +42,14 @@ export class FacebookOauthStrategy extends PassportStrategy(
       mode: 'cors',
       method: 'GET',
     };
-    const response = fetch(url, httpOptions);
-    const result = (await response).json();
+    const response = await fetch(url, httpOptions);
+    if (!response.ok) {
+      throw new UnauthorizedException({
+        statusCode: HttpStatus.UNAUTHORIZED,
+        message: 'facebook auth failed',
+      });
+    }
+    const result = await response.json();
     return result;
   }
 }
