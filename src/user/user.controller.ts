@@ -8,17 +8,20 @@ import {
   Patch,
   Body,
 } from '@nestjs/common';
+import { ApiCookieAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { LocalAuthGuard } from 'src/auth/guards/local-auth.guard';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ResetPasswordDto } from './dtos/ResetPassword.dto';
 import { UpdateUserDto } from './dtos/UpdateUser.dto';
 import { UserService } from './user.service';
 
+@ApiTags('user')
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Patch('resetPassword')
+  @ApiOperation({ summary: 'ResetPassord, login first' })
   @UseGuards(LocalAuthGuard)
   async resetPassword(@Req() req, @Body() body: ResetPasswordDto) {
     const { newPassword, repeatNewPassword } = body;
@@ -36,6 +39,8 @@ export class UserController {
   }
 
   @Patch('')
+  @ApiOperation({ summary: 'update user' })
+  @ApiCookieAuth('accessToken')
   @UseGuards(JwtAuthGuard)
   async update(@Req() req, @Body() body: UpdateUserDto) {
     const { userId } = req.user;
@@ -58,6 +63,8 @@ export class UserController {
   }
 
   @Get('profile')
+  @ApiOperation({ summary: 'get user by accessToken meta' })
+  @ApiCookieAuth('accessToken')
   @UseGuards(JwtAuthGuard)
   async getProfile(@Req() req) {
     const { email } = req.user;
@@ -65,6 +72,8 @@ export class UserController {
   }
 
   @Get('dashboard')
+  @ApiOperation({ summary: 'get all users' })
+  @ApiCookieAuth('accessToken')
   @UseGuards(JwtAuthGuard)
   async getAll() {
     try {

@@ -24,7 +24,13 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { VerifyService } from './verify.service';
 import * as moment from 'moment';
+import { ApiBody, ApiCookieAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { LoginDto } from './dtos/Login.dto';
+import { ResendVerifyEmailDto } from './dtos/ResendVerifyEmail.dto';
+import { VerifyDto } from './dtos/Verify.dto';
+import { OauthDto } from './dtos/Oauth.dto';
 
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   appUrl: string;
@@ -37,13 +43,32 @@ export class AuthController {
     this.appUrl = configService.get<string>('APP_URL');
   }
 
+
+  @Post('login')
+  @ApiBody({type: LoginDto})
+  @UseGuards(LocalAuthGuard)
+  async login(@Req() req, @Res({ passthrough: true }) res, @Ip() ip: string) {
+    const accessToken = await this.authService.login(req.user, ip);
+
+    res.cookie('accessToken', accessToken);
+    return {
+      statusCode: HttpStatus.OK,
+      data: {
+        accessToken,
+        ...req.user,
+      },
+    };
+  }
+
   @Head('')
+  @ApiCookieAuth('accessToken')
   @UseGuards(JwtAuthGuard)
   async authenticate() {
     return;
   }
 
   @Post('signup')
+  @ApiOperation({ summary: 'sign up and send verify email' })
   async signUp(@Req() req, @Body() body: CreateUserDto) {
     console.log(body);
     try {
@@ -63,23 +88,11 @@ export class AuthController {
     }
   }
 
-  @Post('login')
-  @UseGuards(LocalAuthGuard)
-  async login(@Req() req, @Res({ passthrough: true }) res, @Ip() ip: string) {
-    const accessToken = await this.authService.login(req.user, ip);
 
-    res.cookie('accessToken', accessToken);
-    return {
-      statusCode: HttpStatus.OK,
-      data: {
-        accessToken,
-        ...req.user,
-      },
-    };
-  }
 
   @Post('resendverifyemail')
-  async resendVerifyEmail(@Body() body){
+  @ApiOperation({ summary: 'resent verify email' })
+  async resendVerifyEmail(@Body() body:ResendVerifyEmailDto){
     try {
       await this.verifyService.sendEmail(body.email, body.displayName);
       return {
@@ -96,11 +109,12 @@ export class AuthController {
   }
 
   @Get('verify')
+  @ApiOperation({ summary: 'verify user by email' })
   async verfiyUser(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
     @Ip() ip: string,
-    @Query() query,
+    @Query() query:VerifyDto,
   ) {
     const expireDate = moment().add(7, 'd').toDate();
     const check = await this.verifyService.verifyByEmail(
@@ -125,7 +139,9 @@ export class AuthController {
   }
 
   @Post('google')
+  @ApiOperation({ summary: 'need access token from google' })
   @UseGuards(GoogleOauthGuard)
+  @ApiBody({type: OauthDto})
   async googleAuth(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
@@ -158,6 +174,8 @@ export class AuthController {
   }
 
   @Post('facebook')
+  @ApiOperation({ summary: 'need access token from facebook' })
+  @ApiBody({type: OauthDto})
   @UseGuards(FacebookOauthGuard)
   async facebookLogin(
     @Req() req: Request,
