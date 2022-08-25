@@ -103,6 +103,7 @@ export class AuthController {
   @Post('resendverifyemail')
   @ApiOperation({ summary: 'resent verify email' })
   async resendVerifyEmail(@Body() body:ResendVerifyEmailDto){
+    console.log(body);
     try {
       await this.verifyService.sendEmail(body.email, body.displayName);
       return {

@@ -30,9 +30,12 @@ export class VerifyService {
   }
 
   async verifyByEmail(email: string, code: string): Promise<boolean> {
+    console.log(email)
+    console.log(code)
     const verificationCheck = await this.client.verify.v2
       .services(this.twilioServiceSID)
       .verificationChecks.create({ to: email, code });
     return verificationCheck.valid;
+
   }
 }
