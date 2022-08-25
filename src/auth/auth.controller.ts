@@ -47,7 +47,7 @@ export class AuthController {
   @Post('login')
   @ApiBody({type: LoginDto})
   @UseGuards(LocalAuthGuard)
-  async login(@Req() req, @Res({ passthrough: true }) res, @Ip() ip: string) {
+  async login(@Req() req, @Res({ passthrough: true }) res :Response, @Ip() ip: string) {
     const accessToken = await this.authService.login(req.user, ip);
 
     res.cookie('accessToken', accessToken);
@@ -57,6 +57,15 @@ export class AuthController {
         accessToken,
         ...req.user,
       },
+    };
+  }
+
+  @Post('logout')
+  async logout(@Res({ passthrough: true }) res :Response) {
+    res.clearCookie('accessToken');
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'logout successfully'
     };
   }
 
@@ -86,6 +95,8 @@ export class AuthController {
       });
     }
   }
+
+
 
 
 
