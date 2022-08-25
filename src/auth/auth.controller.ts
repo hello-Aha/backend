@@ -69,11 +69,10 @@ export class AuthController {
 
   @Post('signup')
   @ApiOperation({ summary: 'sign up and send verify email' })
-  async signUp(@Req() req, @Body() body: CreateUserDto) {
-    console.log(body);
+  async signUp(@Body() body: CreateUserDto) {
     try {
       await this.userService.createOne(body);
-      await this.verifyService.sendEmail(body.email, body.displayName);
+      if(!body.isActive) await this.verifyService.sendEmail(body.email, body.displayName);
       return {
         statusCode: HttpStatus.CREATED,
         message: "sign up successfully",
