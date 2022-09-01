@@ -5,7 +5,7 @@ services:
     image: postgres
     restart: always
     environment:
-      POSTGRES_PASSWORD: password
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - 5432:5432
     volumes:
@@ -13,6 +13,22 @@ services:
       - ./data/backups:/backups
     networks:
       - my-network
+
+  backend:
+    container_name: aha_server
+    image: aha_backend
+    restart: always
+    working_dir: /app
+    build: .
+    command: yarn run start:prod
+    ports:
+      - 8000:8000
+    volumes:
+      - ./.env:/app/.env
+    networks:
+      - my-network
+  
+  
 
 
 networks:

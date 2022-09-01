@@ -5,7 +5,7 @@ import {EncryptService} from 'src/utilities/encrypt.service';
 import {Repository} from 'typeorm';
 import {CreateUserDto} from './dtos/CreateUser.dto';
 import {UpdateUserDto} from './dtos/UpdateUser.dto';
-import {User} from './user.entity';
+import {User} from '../database/entities/user.entity';
 
 @Injectable()
 export class UserService {
@@ -14,7 +14,6 @@ export class UserService {
     private userRepository: Repository<User>,
     private encryptService: EncryptService,
   ) {
-    // this.activateUser(17);
   }
 
   async findOne(email: string): Promise<User | null> {

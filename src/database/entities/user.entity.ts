@@ -29,18 +29,18 @@ export class User {
   @Column({default: 0})
     signInCount: number;
 
-  @Column({type: 'timestamptz', default: new Date()})
+  @Column({type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP'})
     lastSessionAt: Date;
 
   @Column({default: false})
     isActive: boolean;
 
-  @Column({type: 'timestamptz', default: new Date()})
+  @Column({type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP'})
     currentSignInAt: Date;
 
-  @Column({type: 'timestamptz', default: new Date()})
+  @Column({type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP'})
     createdAt: Date;
 
-  @Column({type: 'timestamptz', default: new Date()})
+  @Column({type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP'})
     updatedAt: Date;
 }

@@ -2,7 +2,7 @@ import {Module} from '@nestjs/common';
 import {TypeOrmModule} from '@nestjs/typeorm';
 import {EncryptService} from 'src/utilities/encrypt.service';
 import {UserController} from './user.controller';
-import {User} from './user.entity';
+import {User} from '../database/entities/user.entity';
 import {UserService} from './user.service';
 
 @Module({
