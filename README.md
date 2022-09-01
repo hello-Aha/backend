@@ -38,6 +38,12 @@ $ yarn run start:dev
 $ yarn run start:prod
 ```
 
+Before run the prodcution mode, you need to compile app first
+
+```
+yarn run build
+```
+
 
 
 ## License
